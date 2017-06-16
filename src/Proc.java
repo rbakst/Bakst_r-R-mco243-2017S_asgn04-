@@ -14,6 +14,7 @@ public class Proc {
 		this.running = true;
 	}
 	
+	
 	// The OS can grant a request for resources through this method
 	public void addResources(int r)
 	{

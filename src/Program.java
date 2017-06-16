@@ -9,6 +9,8 @@ public class Program
 	final static int MAX_PROC_RESOURCES = 13; // Highest amount of resources any process could need
 	final static int ITERATIONS = 30; // How long to run the program
 	static Random rand = new Random();
+	private static int availableResources = 0;
+	private static int totalHeldResources = 0;
 	
 	public static void main(String[] args)
 	{
@@ -18,12 +20,17 @@ public class Program
 		for (int i = 0; i < NUM_PROCS; i++)
 			processes.add(new Proc(MAX_PROC_RESOURCES - rand.nextInt(3))); // Initialize to a new Proc, with some small range for its max
 		
-		int availableResources = 0;
+		//int availableResources = 0;
 		Proc currProc = null;
-		int totalHeldResources = 0;
+		
 		int currRequest;
 		int claim;
+		boolean grant = true;
+		
+		
+		int testAvailResources;
 		// Run the simulation:
+		
 		for (int i = 0; i < ITERATIONS; i++)
 		{
 			// loop through the processes and for each one get its request
@@ -44,16 +51,43 @@ public class Program
 					totalHeldResources += currRequest;
 					System.out.println("Process " + j + " reliquished " + -currRequest +" resources." );
 				}
-				
-				else if(claim > availableResources)
+				else 
 				{
-					System.out.println("Process " + j + " requested " + currRequest +", denied." );
-				}
-				else
-				{
-					System.out.println("Process " + j + " requested " + currRequest +", granted." );
-					currProc.addResources(currRequest);
-					totalHeldResources += currRequest;
+					//grant = testRequest(processes, currProc, claim);
+						
+					
+					if (claim <= availableResources)
+					{
+						ArrayList<Boolean> parallel = new ArrayList<Boolean> (processes.size());//all false
+						for (boolean p : parallel)
+						{
+							p = false;
+						}
+						testAvailResources = availableResources - claim;
+						while(parallel.contains(false) && grant)
+						{
+							grant = false;
+							//loop through all resources and ensure one will be able to finish with this number available, outer loop will continue to test for rest
+							for (int x = 0; x < processes.size(); ++x)
+							{
+								if ((processes.get(x).getMaxResources()-processes.get(x).getHeldResources()) < testAvailResources)//enough for this process to finish, add its resourcces back
+								{
+									testAvailResources += processes.get(x).getMaxResources();
+									parallel.set(x, true);
+									grant = true;
+									break;
+								}
+							}
+							
+						}
+						
+						if (grant)
+						{
+							System.out.println("Process " + j + " requested " + currRequest +", granted." );
+							currProc.addResources(currRequest);
+							totalHeldResources += currRequest;
+						}
+						
 					
 					//if (currRequest == claim)
 					//I decided to omit this since although in this case the process has all the resources it needs,
@@ -62,6 +96,11 @@ public class Program
 					//would relinquish its resources, so we need to wait until the process "requests" again (when the loop reaches it)
 					//and then its resources are relinquished.
 					
+				}
+					if (claim > availableResources || !grant)
+					{
+						System.out.println("Process " + j + " requested " + currRequest +", denied." );
+					}
 				}
 				
 				// At the end of each iteration, give a summary of the current status:
@@ -77,5 +116,4 @@ public class Program
 		}
 
 	}
-
 }
