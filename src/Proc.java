@@ -5,6 +5,7 @@ public class Proc {
 	private int heldResources; // Currently held resources
 	private boolean running; // Is the process running
 	private Random rand = new Random();
+	private int lastRequestGranted;
 	
 	// Constructor, accepts the maxResources for this process
 	public Proc(int maxResources)
@@ -52,8 +53,10 @@ public class Proc {
 			}
 			else 
 			{
+				int request = Math.min(rand.nextInt(maxResources - heldResources + 1), available);
+				lastRequestGranted = request;
 				// request a random number of resources up to the max, or the available number
-				return Math.min(rand.nextInt(maxResources - heldResources + 1), available);
+				return request;
 			}
 		}
 		else // not running, restart the process with some probability
@@ -62,5 +65,10 @@ public class Proc {
 				running = true;
 			return 0;
 		}
+	}
+	
+	public void revertRequest()
+	{
+		heldResources -= lastRequestGranted;
 	}
 }

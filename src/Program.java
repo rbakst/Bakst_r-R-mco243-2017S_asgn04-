@@ -40,7 +40,7 @@ public class Program
 				availableResources = TOTAL_RESOURCES - totalHeldResources;
 				// Get the request
 				currRequest = currProc.resourceRequest(availableResources);
-				claim = currProc.getMaxResources() - currProc.getHeldResources();
+				//claim = currProc.getMaxResources() - currProc.getHeldResources();
 				
 				// just ignore processes that don't ask for resources
 				if (currRequest == 0)
@@ -54,16 +54,18 @@ public class Program
 				else 
 				{
 					//grant = testRequest(processes, currProc, claim);
-						
+					currProc.addResources(currRequest);
+					totalHeldResources += currRequest;	
+					availableResources = TOTAL_RESOURCES - totalHeldResources;
 					
-					if (claim <= availableResources)
+					if (currRequest <= availableResources)
 					{
 						ArrayList<Boolean> parallel = new ArrayList<Boolean> (processes.size());//all false
 						for (boolean p : parallel)
 						{
 							p = false;
 						}
-						testAvailResources = availableResources - claim;
+						testAvailResources = availableResources;
 						while(parallel.contains(false) && grant)
 						{
 							grant = false;
@@ -84,8 +86,7 @@ public class Program
 						if (grant)
 						{
 							System.out.println("Process " + j + " requested " + currRequest +", granted." );
-							currProc.addResources(currRequest);
-							totalHeldResources += currRequest;
+							
 						}
 						
 					
@@ -97,8 +98,9 @@ public class Program
 					//and then its resources are relinquished.
 					
 				}
-					if (claim > availableResources || !grant)
+					if (currRequest > availableResources || !grant)
 					{
+						processes.get(j).revertRequest();
 						System.out.println("Process " + j + " requested " + currRequest +", denied." );
 					}
 				}
